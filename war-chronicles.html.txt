@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>War Chronicles — Historical Documentaries</title>
+  <style>
+    :root {
+      --bg: #0c0f14;
+      --bg-card: #151a22;
+      --bg-elevated: #1c2330;
+      --border: #2a3344;
+      --text: #e8edf5;
+      --text-muted: #8b9bb4;
+      --accent: #c9a227;
+      --accent-dim: #a68520;
+      --danger: #b33a3a;
+      --success: #3a8f6e;
+      --radius: 12px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(180deg, #12161e 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 1.5rem 2rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .logo {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 0.9rem 1.2rem 0.9rem 3rem;
+      font-size: 1.05rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #searchInput:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.2);
+    }
+
+    #searchInput::placeholder { color: var(--text-muted); }
+
+    .search-icon {
+      position: absolute;
+      left: 1.1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 1.1rem;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    .intro {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .intro strong { color: var(--accent); }
+
+    #resultsCount {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-dim);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+
+    .card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.35rem;
+      color: var(--text);
+    }
+
+    .card .meta {
+      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+
+    .card .excerpt {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state h2 {
+      color: var(--text);
+      margin-bottom: 0.75rem;
+      font-size: 1.4rem;
+    }
+
+    .empty-state p { max-width: 480px; margin: 0 auto 1rem; }
+
+    .hint {
+      display: inline-block;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+
+    #detailView {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .back-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .doc-header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+
+    .doc-header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.4rem;
+      color: var(--text);
+    }
+
+    .doc-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .doc-meta span {
+      background: var(--bg-elevated);
+      padding: 0.25rem 0.7rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .doc-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .doc-section h2 {
+      font-size: 1.2rem;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.02em;
+    }
+
+    .doc-section p {
+      color: var(--text);
+      font-size: 1.02rem;
+    }
+
+    .doc-section ul {
+      margin-left: 1.25rem;
+      color: var(--text);
+    }
+
+    .doc-section li { margin-bottom: 0.4rem; }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .logo { font-size: 1.4rem; }
+      .doc-header h1 { font-size: 1.5rem; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">⚔ WAR CHRONICLES</div>
+    <p class="tagline">Historical documentaries of wars throughout human history</p>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="search" id="searchInput" placeholder="Search any war… e.g. World War II, Vietnam, Peloponnesian…" autocomplete="off" />
+    </div>
+  </header>
+
+  <main>
+    <p class="intro">
+      Browse or search educational summaries of major wars.
+      Content is historical and documentary in style.
+      For wars not listed here, ask <strong>Grok</strong> for a custom summary.
+    </p>
+
+    <div id="listView">
+      <div id="resultsCount"></div>
+      <div class="cards" id="cardsContainer"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <h2>No matching documentary found</h2>
+        <p>This offline library covers many of the most significant wars in history, but not every conflict that has ever occurred.</p>
+        <p class="hint">Ask Grok for a custom documentary-style summary of that war.</p>
+      </div>
+    </div>
+
+    <div id="detailView"></div>
+  </main>
+
+  <footer>
+    Educational historical content only · Not affiliated with any government or military · Built for learning
+  </footer>
+
+  <script>
+    const wars = [
+      {
+        id: "peloponnesian",
+        title: "Peloponnesian War",
+        aliases: ["peloponnesian", "athens vs sparta", "thucydides"],
+        period: "431–404 BCE",
+        region: "Ancient Greece",
+        excerpt: "A decades-long struggle between Athens and Sparta that reshaped the Greek world and ended the Golden Age of Athens.",
+        causes: "Long-standing rivalry between democratic Athens and oligarchic Sparta, intensified by Athenian imperial expansion through the Delian League. Fear of Athenian power among Sparta and its allies, disputes over smaller states (Corinth, Megara, Plataea), and the breakdown of the Thirty Years’ Peace.",
+        keyEvents: ["431 BCE – War begins after Theban attack on Plataea and Spartan invasion of Attica", "430–429 BCE – Plague devastates Athens; Pericles dies", "421 BCE – Peace of Nicias (temporary truce)", "415–413 BCE – Disastrous Athenian expedition to Sicily", "405 BCE – Spartan fleet under Lysander destroys Athenian navy at Aegospotami", "404 BCE – Athens surrenders; Long Walls demolished"],
+        outcome: "Sparta and its allies won. Athens lost its empire, navy, and democratic government (temporarily replaced by the Thirty Tyrants). The Greek city-states were exhausted, paving the way for later Macedonian domination under Philip II and Alexander.",
+        significance: "One of the most thoroughly documented ancient wars (thanks to Thucydides). It demonstrated the limits of naval power against a determined land power, the dangers of overextension, and how prolonged war can destroy the very civilization it seeks to protect."
+      },
+      {
+        id: "punic",
+        title: "Punic Wars (especially Second)",
+        aliases: ["punic", "hannibal", "carthage", "rome vs carthage", "second punic war"],
+        period: "264–146 BCE (Second: 218–201 BCE)",
+        region: "Western Mediterranean",
+        excerpt: "Three wars between Rome and Carthage that decided mastery of the western Mediterranean and made Rome a superpower.",
+        causes: "Competition for control of Sicily, Sardinia, Spain, and Mediterranean trade. Carthage’s commercial empire clashed with Rome’s expanding influence. The Second Punic War was triggered by Hannibal’s attack on Saguntum and his invasion of Italy.",
+        keyEvents: ["218 BCE – Hannibal crosses the Alps into Italy", "216 BCE – Battle of Cannae: catastrophic Roman defeat", "211–206 BCE – Scipio campaigns in Spain", "202 BCE – Battle of Zama: Scipio defeats Hannibal in North Africa", "146 BCE – Third Punic War ends with the complete destruction of Carthage"],
+        outcome: "Rome emerged victorious in all three wars. Carthage was destroyed in 146 BCE; its territory became the Roman province of Africa. Rome gained control of the western Mediterranean and vast new resources.",
+        significance: "Transformed Rome from a regional Italian power into a Mediterranean empire. Hannibal’s campaigns remain classics of military strategy. The wars also accelerated social and political changes inside Rome that later contributed to the Republic’s crisis."
+      },
+      {
+        id: "hundred-years",
+        title: "Hundred Years’ War",
+        aliases: ["hundred years", "100 years war", "england france", "joan of arc"],
+        period: "1337–1453",
+        region: "France & England",
+        excerpt: "A long series of conflicts between England and France over succession, territory, and feudal rights that reshaped both kingdoms.",
+        causes: "English kings’ claims to the French throne (via Edward III’s descent from the Capetians), control of Gascony/Aquitaine, and economic rivalry. Dynastic and feudal disputes escalated into full-scale war.",
+        keyEvents: ["1346 – Battle of Crécy: English longbowmen defeat French knights", "1356 – Battle of Poitiers: capture of the French king", "1415 – Battle of Agincourt: major English victory under Henry V", "1429 – Joan of Arc lifts the siege of Orléans and turns the tide", "1453 – French victory at Castillon; England loses almost all continental possessions"],
+        outcome: "France ultimately prevailed. England retained only Calais (until 1558). The war strengthened the French monarchy and national identity while contributing to political turmoil in England (Wars of the Roses).",
+        significance: "Marked the decline of feudal cavalry and the rise of professional armies and infantry/longbow tactics. Accelerated the development of national consciousness in both countries and helped end the medieval order."
+      },
+      {
+        id: "thirty-years",
+        title: "Thirty Years’ War",
+        aliases: ["thirty years", "30 years war", "westphalia", "defenestration of prague"],
+        period: "1618–1648",
+        region: "Central Europe (mainly Holy Roman Empire)",
+        excerpt: "One of the most destructive conflicts in European history, beginning as a religious civil war and expanding into a continent-wide struggle for power.",
+        causes: "Religious tensions between Catholics and Protestants after the Reformation, the Habsburg attempt to impose Catholicism and central authority, and the ambitions of other powers (Sweden, France, Denmark, Spain). The Defenestration of Prague (1618) was the immediate trigger.",
+        keyEvents: ["1618 – Defenestration of Prague; Bohemian revolt begins", "1620 – Battle of White Mountain: Habsburg victory over Bohemian rebels", "1630–1632 – Swedish intervention under Gustavus Adolphus", "1635 – France openly enters the war against the Habsburgs", "1648 – Peace of Westphalia ends the war"],
+        outcome: "No clear military victor. The Peace of Westphalia recognized the sovereignty of the states of the Holy Roman Empire, confirmed religious pluralism (including Calvinism), granted independence to the Dutch Republic, and redrew parts of the map in favor of France and Sweden. The Empire was permanently weakened.",
+        significance: "Often seen as the end of the era of large-scale religious wars in Europe and a key step toward the modern system of sovereign states. The demographic and economic devastation in Germany was immense (estimates of population loss in some regions reach 30–40%)."
+      },
+      {
+        id: "american-revolution",
+        title: "American Revolutionary War",
+        aliases: ["american revolution", "revolutionary war", "war of independence", "1776"],
+        period: "1775–1783",
+        region: "Thirteen Colonies / North America",
+        excerpt: "The war in which the thirteen British colonies in North America won independence and created the United States of America.",
+        causes: "Colonial resistance to British taxation and regulation without representation (Stamp Act, Townshend Acts, Tea Act), the Intolerable Acts after the Boston Tea Party, and growing ideology of natural rights and self-government. Fighting began at Lexington and Concord in 1775.",
+        keyEvents: ["1775 – Battles of Lexington, Concord, and Bunker Hill", "1776 – Declaration of Independence", "1777 – Battle of Saratoga: turning point that brought French alliance", "1778 – France enters the war against Britain", "1781 – Siege of Yorktown: British army under Cornwallis surrenders", "1783 – Treaty of Paris recognizes American independence"],
+        outcome: "The United States achieved independence. Britain retained Canada and some Caribbean possessions. The new nation faced the challenge of creating a stable government (Articles of Confederation, then the Constitution of 1787).",
+        significance: "First successful large-scale colonial revolt against a European empire in the modern era. Inspired later revolutions and independence movements. Established republican government and constitutional principles that influenced global political thought."
+      },
+      {
+        id: "napoleonic",
+        title: "Napoleonic Wars",
+        aliases: ["napoleonic", "napoleon", "waterloo", "french revolutionary wars"],
+        period: "1803–1815 (broader French Revolutionary Wars from 1792)",
+        region: "Europe (and beyond)",
+        excerpt: "A series of coalitions against Napoleonic France that redrew the map of Europe and ended with the Emperor’s final defeat.",
+        causes: "Continuation of the French Revolutionary Wars, Napoleon’s expansionist ambitions, British determination to prevent French hegemony, and the desire of other monarchies to restore the pre-revolutionary order.",
+        keyEvents: ["1805 – Battles of Trafalgar (British naval victory) and Austerlitz (French victory)", "1806–1807 – Defeat of Prussia and Russia; Treaties of Tilsit", "1812 – Disastrous French invasion of Russia", "1813 – Battle of Leipzig (“Battle of the Nations”)", "1814 – Napoleon abdicates; exiled to Elba", "1815 – Hundred Days; Battle of Waterloo; final exile to St. Helena"],
+        outcome: "Napoleon was defeated. The Congress of Vienna (1814–1815) restored many monarchies, redrew boundaries, and established a conservative order that lasted for decades. France returned to Bourbon rule (temporarily).",
+        significance: "Spread many revolutionary and administrative ideas across Europe, accelerated the decline of the old feudal order, and demonstrated both the power and the limits of mass conscript armies. Nationalism and liberalism gained lasting momentum."
+      },
+      {
+        id: "american-civil",
+        title: "American Civil War",
+        aliases: ["civil war", "american civil war", "war between the states", "confederacy"],
+        period: "1861–1865",
+        region: "United States",
+        excerpt: "The deadliest war in American history, fought over slavery, secession, and the nature of the Union.",
+        causes: "Deep sectional conflict over the expansion of slavery into new territories, states’ rights, and economic differences between the industrial North and the plantation South. The election of Abraham Lincoln in 1860 led eleven Southern states to secede and form the Confederate States of America. War began with the Confederate attack on Fort Sumter (April 12, 1861).",
+        keyEvents: ["1861 – Fort Sumter; First Battle of Bull Run", "1862 – Battle of Antietam; Emancipation Proclamation announced", "1863 – Battles of Gettysburg and Vicksburg (turning points)", "1864 – Sherman’s Atlanta Campaign and March to the Sea", "1865 – Lee surrenders at Appomattox Court House (April 9); Lincoln assassinated"],
+        outcome: "Union victory. Slavery was abolished (13th Amendment). The Confederacy collapsed. The war cost an estimated 620,000–850,000 lives and left the South economically devastated. Reconstruction followed.",
+        significance: "Preserved the United States as a single nation and ended legal slavery. Transformed the federal government’s power and set the stage for later civil-rights struggles. It remains the central trauma and defining conflict of American history."
+      },
+      {
+        id: "ww1",
+        title: "World War I",
+        aliases: ["world war 1", "ww1", "first world war", "great war", "1914"],
+        period: "1914–1918",
+        region: "Global (mainly Europe, Middle East, Africa)",
+        excerpt: "The Great War that destroyed four empires, killed millions, and set the conditions for the even greater catastrophe of 1939–1945.",
+        causes: "Complex web of alliances, militarism, imperial rivalries, and nationalism. The immediate spark was the assassination of Archduke Franz Ferdinand of Austria-Hungary in Sarajevo (28 June 1914) by a Bosnian Serb nationalist. Austria-Hungary’s ultimatum to Serbia and the subsequent chain of mobilizations drew in the great powers.",
+        keyEvents: ["1914 – Invasion of Belgium; Battle of the Marne; trench warfare begins", "1915 – Gallipoli campaign; use of poison gas; Armenian Genocide", "1916 – Battles of Verdun and the Somme", "1917 – United States enters the war; Russian Revolutions; Brest-Litovsk", "1918 – German Spring Offensive; Allied Hundred Days Offensive; Armistice (11 November)"],
+        outcome: "Allied victory. The German, Austro-Hungarian, Ottoman, and Russian empires collapsed. The Treaty of Versailles imposed heavy terms on Germany. New states appeared in Eastern Europe and the Middle East. The League of Nations was created.",
+        significance: "Ended the old European order. The combination of industrial warfare, nationalism, and unresolved grievances helped produce the conditions for World War II, the rise of totalitarian regimes, and the redrawing of the global map."
+      },
+      {
+        id: "ww2",
+        title: "World War II",
+        aliases: ["world war 2", "ww2", "second world war", "wwii", "1939"],
+        period: "1939–1945",
+        region: "Global",
+        excerpt: "The deadliest conflict in human history, fought between the Axis and Allied powers, that ended with the defeat of Nazi Germany and Imperial Japan and the dawn of the nuclear age.",
+        causes: "Aggressive expansion by Nazi Germany, Fascist Italy, and Imperial Japan; the failure of the League of Nations and appeasement; unresolved issues from World War I and the Treaty of Versailles; economic crisis of the 1930s. Germany’s invasion of Poland on 1 September 1939 led Britain and France to declare war.",
+        keyEvents: ["1939 – Invasion of Poland; war begins in Europe", "1940 – Fall of France; Battle of Britain", "1941 – Operation Barbarossa (invasion of the USSR); Pearl Harbor; US enters the war", "1942–1943 – Battles of Stalingrad, El Alamein, Midway", "1944 – D-Day (Normandy); liberation of France", "1945 – Fall of Berlin; atomic bombs on Hiroshima and Nagasaki; Japanese surrender"],
+        outcome: "Unconditional Allied victory. Nazi Germany and Imperial Japan were defeated and occupied. The United Nations was founded. The Cold War between the United States and the Soviet Union began. An estimated 70–85 million people died.",
+        significance: "Reshaped the entire international order. Led to decolonization, the division of Europe, the nuclear age, the Universal Declaration of Human Rights, and the emergence of the United States and Soviet Union as superpowers. The Holocaust and other atrocities produced a lasting moral reckoning."
+      },
+      {
+        id: "korean",
+        title: "Korean War",
+        aliases: ["korean war", "korea", "1950"],
+        period: "1950–1953",
+        region: "Korean Peninsula",
+        excerpt: "The first major hot conflict of the Cold War, which left Korea divided and set patterns for limited war under the nuclear shadow.",
+        causes: "Division of Korea after World War II into Soviet-backed North and US-backed South. North Korean invasion of the South on 25 June 1950, supported by the Soviet Union and later China, aimed at reunifying the peninsula under communist rule.",
+        keyEvents: ["June 1950 – North Korean invasion; UN Security Council authorizes intervention", "September 1950 – Inchon landing; UN forces push north", "November 1950 – Chinese intervention; UN retreat", "1951–1953 – Stalemate near the 38th parallel; armistice talks", "July 1953 – Armistice signed; Demilitarized Zone established"],
+        outcome: "Military stalemate. Korea remained divided roughly along the pre-war line. No formal peace treaty has ever been signed. Both Koreas remain heavily militarized.",
+        significance: "Demonstrated that the Cold War could turn hot. Established the precedent of UN collective security. Cemented the US commitment to containing communism in Asia and shaped the long-term division of the peninsula."
+      },
+      {
+        id: "vietnam",
+        title: "Vietnam War",
+        aliases: ["vietnam", "vietnam war", "second indochina war", "american war"],
+        period: "1955–1975 (US combat role mainly 1965–1973)",
+        region: "Vietnam, Laos, Cambodia",
+        excerpt: "A long, divisive conflict in which communist North Vietnam and the Viet Cong fought to reunify the country against South Vietnam and its principal ally, the United States.",
+        causes: "Vietnamese struggle for independence from French colonial rule; Cold War containment policy and the “domino theory”; division of Vietnam after the 1954 Geneva Accords; North Vietnamese determination to reunify under communist leadership; US decision to support the anti-communist government in the South.",
+        keyEvents: ["1954 – French defeat at Dien Bien Phu; Geneva Accords divide Vietnam", "1964 – Gulf of Tonkin incident and Resolution", "1965 – Major US combat troops deployed; Operation Rolling Thunder begins", "1968 – Tet Offensive: military failure for the communists but political turning point in the US", "1973 – Paris Peace Accords; US withdrawal", "1975 – Fall of Saigon; communist victory and reunification"],
+        outcome: "Communist victory. South Vietnam collapsed in 1975. Vietnam was reunified under the Socialist Republic of Vietnam. Laos and Cambodia also fell to communist movements (with catastrophic consequences in Cambodia under the Khmer Rouge).",
+        significance: "Profoundly affected American society, politics, and foreign policy (“Vietnam Syndrome”). Demonstrated the limits of conventional military power against determined guerrilla and nationalist forces. Left a legacy of human suffering, Agent Orange, refugees, and deep political division in the United States."
+      },
+      {
+        id: "crusades",
+        title: "The Crusades",
+        aliases: ["crusades", "crusade", "holy land", "jerusalem"],
+        period: "1095–1291 (main series)",
+        region: "Eastern Mediterranean / Levant",
+        excerpt: "A series of religiously motivated military campaigns launched by Western European Christians to recover the Holy Land from Muslim rule.",
+        causes: "Religious fervor after the Byzantine appeal for help against the Seljuk Turks; desire to secure pilgrimage routes to Jerusalem; papal calls for armed pilgrimage; mix of piety, adventure, and opportunity for land and status among European knights.",
+        keyEvents: ["1095 – Pope Urban II calls the First Crusade at Clermont", "1099 – Capture of Jerusalem by the First Crusade", "1147–1149 – Second Crusade (failure)", "1187 – Saladin retakes Jerusalem; Third Crusade follows", "1202–1204 – Fourth Crusade sacks Christian Constantinople", "1291 – Fall of Acre; end of the mainland Crusader states"],
+        outcome: "The Crusader states were eventually eliminated. Western Europe did not permanently control the Holy Land. Relations between Western Christendom, Byzantium, and the Islamic world were deeply affected—often for the worse.",
+        significance: "Intensified religious identity on all sides, stimulated trade and cultural contact, weakened the Byzantine Empire, and left a long memory of conflict that has been invoked (and misused) in later centuries."
+      },
+      {
+        id: "mongol",
+        title: "Mongol Conquests",
+        aliases: ["mongol", "genghis khan", "mongol empire", "mongol invasions"],
+        period: "1206–c. 1368 (main expansion under Genghis and his successors)",
+        region: "Eurasia",
+        excerpt: "The largest contiguous land empire in history, created by the Mongols under Genghis Khan and his descendants through a series of extraordinarily rapid and destructive campaigns.",
+        causes: "Unification of the Mongol and Turkic tribes under Temüjin (Genghis Khan); highly effective military organization, mobility, and discipline; opportunities created by fragmented states in China, Central Asia, the Middle East, and Eastern Europe.",
+        keyEvents: ["1206 – Temüjin proclaimed Genghis Khan", "1211–1234 – Conquest of the Jin dynasty in northern China", "1219–1221 – Destruction of the Khwarezmian Empire", "1237–1242 – Mongol invasions of Eastern and Central Europe", "1258 – Sack of Baghdad; end of the Abbasid Caliphate", "1279 – Completion of the conquest of Song China by Kublai Khan"],
+        outcome: "Creation of the Mongol Empire stretching from East Asia to Eastern Europe. After the death of Möngke Khan the empire fragmented into khanates (Yuan, Chagatai, Golden Horde, Ilkhanate). Many regions suffered massive population loss; others later experienced relative stability and increased trade under the Pax Mongolica.",
+        significance: "One of the most dramatic episodes of empire-building in world history. Facilitated long-distance trade and cultural exchange across Eurasia while also causing enormous destruction. Influenced the later history of China, Russia, Persia, and the Islamic world."
+      },
+      {
+        id: "russo-japanese",
+        title: "Russo-Japanese War",
+        aliases: ["russo-japanese", "russia japan 1904", "tsushima"],
+        period: "1904–1905",
+        region: "Manchuria, Korea, and surrounding seas",
+        excerpt: "A war between the Russian Empire and the Empire of Japan that shocked the world by ending in a decisive Japanese victory.",
+        causes: "Rival imperial ambitions in Korea and Manchuria. Russia’s expansion into the Far East and Japan’s determination to secure its own sphere of influence after its modernization in the Meiji era.",
+        keyEvents: ["February 1904 – Japanese surprise attack on Port Arthur", "1904–1905 – Siege of Port Arthur; Battle of Mukden", "May 1905 – Battle of Tsushima: Japanese navy destroys the Russian Baltic Fleet", "September 1905 – Treaty of Portsmouth (mediated by US President Theodore Roosevelt)"],
+        outcome: "Japanese victory. Russia recognized Japan’s interests in Korea and leased the Liaodong Peninsula and South Manchurian Railway to Japan. The defeat contributed to the 1905 Revolution in Russia.",
+        significance: "First major military victory of an Asian power over a European great power in the modern era. Boosted Japanese confidence and imperialism; weakened the Russian autocracy; demonstrated the effectiveness of modern industrialized warfare and sea power."
+      },
+      {
+        id: "gulf-war",
+        title: "Gulf War (1990–1991)",
+        aliases: ["gulf war", "desert storm", "iraq kuwait", "first gulf war"],
+        period: "1990–1991",
+        region: "Persian Gulf / Kuwait & Iraq",
+        excerpt: "A US-led coalition war to expel Iraqi forces from Kuwait after Saddam Hussein’s invasion.",
+        causes: "Iraq’s invasion and annexation of Kuwait in August 1990, driven by territorial claims, oil, and debt from the Iran–Iraq War. The international community, led by the United States, condemned the invasion and assembled a broad coalition under UN resolutions.",
+        keyEvents: ["2 August 1990 – Iraq invades Kuwait", "November 1990 – UN Security Council sets deadline for withdrawal", "17 January 1991 – Operation Desert Storm air campaign begins", "24–28 February 1991 – Ground campaign liberates Kuwait in 100 hours", "Ceasefire and imposition of sanctions and no-fly zones on Iraq"],
+        outcome: "Decisive coalition victory. Kuwait was liberated. Iraqi forces were expelled and suffered heavy losses. Saddam Hussein remained in power. Sanctions and containment continued until 2003.",
+        significance: "Demonstrated the effectiveness of modern air power, precision munitions, and coalition warfare. Marked a high point of post-Cold War US-led international action under UN auspices. Left unfinished business that contributed to later conflicts in the region."
+      }
+    ];
+
+    const searchInput = document.getElementById('searchInput');
+    const cardsContainer = document.getElementById('cardsContainer');
+    const resultsCount = document.getElementById('resultsCount');
+    const emptyState = document.getElementById('emptyState');
+    const listView = document.getElementById('listView');
+    const detailView = document.getElementById('detailView');
+
+    function normalize(str) {
+      return (str || '').toLowerCase().trim();
+    }
+
+    function matchesQuery(war, query) {
+      if (!query) return true;
+      const q = normalize(query);
+      const fields = [war.title, war.period, war.region, war.excerpt, ...(war.aliases || [])].join(' ').toLowerCase();
+      return fields.includes(q) || q.split(/\s+/).every(term => fields.includes(term));
+    }
+
+    function renderCards(filtered) {
+      cardsContainer.innerHTML = '';
+      if (filtered.length === 0) {
+        emptyState.style.display = 'block';
+        resultsCount.textContent = '';
+        return;
+      }
+      emptyState.style.display = 'none';
+      resultsCount.textContent = filtered.length + ' documentary' + (filtered.length === 1 ? '' : 'ies') + ' found';
+      filtered.forEach(war => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = '<h3>' + war.title + '</h3><div class="meta">' + war.period + ' · ' + war.region + '</div><p class="excerpt">' + war.excerpt + '</p>';
+        card.addEventListener('click', () => showDetail(war));
+        cardsContainer.appendChild(card);
+      });
+    }
+
+    function showDetail(war) {
+      listView.style.display = 'none';
+      detailView.style.display = 'block';
+      detailView.innerHTML = '<button class="back-btn" id="backBtn">← Back to all documentaries</button><div class="doc-header"><h1>' + war.title + '</h1><div class="doc-meta"><span>' + war.period + '</span><span>' + war.region + '</span></div></div><div class="doc-section"><h2>Overview</h2><p>' + war.excerpt + '</p></div><div class="doc-section"><h2>Causes</h2><p>' + war.causes + '</p></div><div class="doc-section"><h2>Key Events</h2><ul>' + war.keyEvents.map(e => '<li>' + e + '</li>').join('') + '</ul></div><div class="doc-section"><h2>Outcome</h2><p>' + war.outcome + '</p></div><div class="doc-section"><h2>Historical Significance</h2><p>' + war.significance + '</p></div>';
+      document.getElementById('backBtn').addEventListener('click', () => {
+        detailView.style.display = 'none';
+        listView.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function update() {
+      const query = searchInput.value;
+      const filtered = wars.filter(w => matchesQuery(w, query));
+      renderCards(filtered);
+    }
+
+    searchInput.addEventListener('input', update);
+    update();
+  </script>
+</body>
+</html>
